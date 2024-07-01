@@ -77,8 +77,9 @@
                               : 'text-gray-700',
                             'block px-4 py-2 text-sm',
                           ]"
-                          >{{ item.name }}</a
                         >
+                          {{ item.name }}
+                        </a>
                       </MenuItem>
                     </div>
                   </MenuItems>
@@ -97,8 +98,9 @@
                   'rounded-md px-6 py-2 text-md cursor-pointer text-transform: uppercase',
                 ]"
                 :aria-current="item.current ? 'page' : undefined"
-                >{{ item.name }}</a
               >
+                {{ item.name }}
+              </a>
             </div>
           </div>
         </div>
@@ -167,8 +169,9 @@
                       active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                       'block px-4 py-2 text-sm',
                     ]"
-                    >{{ item.name }}</a
                   >
+                    {{ item.name }}
+                  </a>
                 </MenuItem>
               </div>
             </MenuItems>
@@ -186,8 +189,9 @@
             'block rounded-md text-base px-2 py-2 text-white text-transform: uppercase',
           ]"
           :aria-current="item.current ? 'page' : undefined"
-          >{{ item.name }}</DisclosureButton
         >
+          {{ item.name }}
+        </DisclosureButton>
         <button
           aria-label="View cart"
           type="button"
@@ -208,7 +212,7 @@
   </Disclosure>
 </template>
 
-<script setup>
+<script lang="ts" setup>
 import {
   Disclosure,
   DisclosureButton,
@@ -219,17 +223,33 @@ import {
   MenuItems,
 } from '@headlessui/vue'
 import { ShoppingCartIcon, ChevronDownIcon } from '@heroicons/vue/16/solid'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
 
-const navigation = [
+interface NavigationItem {
+  name: string
+  href: string
+  current: boolean
+}
+
+interface ProductItem {
+  name: string
+  href: string
+}
+
+const navigation: NavigationItem[] = [
   { name: 'Promotions', href: '#promotions', current: false },
   { name: 'Blog', href: '#blog', current: false },
 ]
 
-const products = [
-  { name: 'Shoes', href: '#shoes', current: false },
-  { name: 'Bags', href: '#bags', current: false },
-  { name: 'Men', href: '#men', current: false },
-  { name: 'Women', href: '#women', current: false },
+const products: ProductItem[] = [
+  { name: 'Shoes', href: '#shoes' },
+  { name: 'Bags', href: '#bags' },
+  { name: 'Men', href: '#men' },
+  { name: 'Women', href: '#women' },
 ]
 </script>
+
+
+<style scoped>
+/* Add your component-specific styles here */
+</style>
