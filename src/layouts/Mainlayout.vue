@@ -1,19 +1,40 @@
 <template>
-  <v-app>
-    <v-main>
+  <div>
+    <header>
+      <!-- Your header content here -->
+      <navbar />
+    </header>
+    <main>
       <router-view />
-    </v-main>
-  </v-app>
+    </main>
+    <footer>
+      <!-- Your footer content here -->
+    </footer>
+
+    <!-- Modals -->
+    <signup-modal v-if="showSignupModal" @close="showSignupModal = false" />
+  </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, ref } from 'vue'
+import Navbar from '../components/Navbar/Navbar.vue'
 
 export default defineComponent({
   name: 'MainLayout',
+  components: {
+    Navbar,
+  },
+  setup() {
+    const showSignupModal = ref(false)
+
+    return {
+      showSignupModal,
+    }
+  },
 })
 </script>
 
 <style scoped>
-/* Your styles here */
+/* Add your styles here */
 </style>
