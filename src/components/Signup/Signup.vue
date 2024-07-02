@@ -17,7 +17,10 @@
             Sign up
           </h2>
         </div>
-        <form class="space-y-6 mt-4" action="#" method="POST">
+        <div v-if="errorMessage !== ''" class="text-red-500 text-center">
+          {{ errorMessage }}
+        </div>
+        <form class="space-y-6 mt-4" @submit.prevent="submitForm">
           <div class="flex w-full justify-between">
             <div class="">
               <label for="email" class="block text-lg leading-6 text-gray-500"
@@ -25,6 +28,7 @@
               >
               <div class="mt-2">
                 <input
+                  v-model="firstName"
                   id="firstName"
                   name="firstName"
                   type="text"
@@ -41,6 +45,7 @@
               >
               <div class="mt-2">
                 <input
+                  v-model="lastName"
                   id="lastName"
                   name="lastName"
                   type="text"
@@ -58,6 +63,7 @@
             >
             <div class="mt-2">
               <input
+                v-model="email"
                 id="email"
                 name="email"
                 type="email"
@@ -77,6 +83,7 @@
             >
             <div class="mt-2">
               <input
+                v-model="phoneNumber"
                 id="phoneNumber"
                 name="text"
                 type="text"
@@ -94,6 +101,7 @@
             >
             <div class="mt-2">
               <input
+                v-model="address"
                 id="address"
                 name="text"
                 type="text"
@@ -115,6 +123,7 @@
             </div>
             <div class="mt-2">
               <input
+                v-model="password"
                 id="password"
                 name="password"
                 type="password"
@@ -136,6 +145,7 @@
             </div>
             <div class="mt-2">
               <input
+                v-model="confirmPassword"
                 id="confirmPassword"
                 name="confirmPassword"
                 type="password"
@@ -150,6 +160,7 @@
           <div class="flex items-center">
             <div class="mr-2">
               <input
+                v-model="isMarketing"
                 id="promotions"
                 name="promotions"
                 type="checkbox"
@@ -190,8 +201,17 @@
 import { ref } from 'vue'
 
 const showLoginModal = ref(false)
+const firstName = ref('')
+const lastName = ref('')
+const address = ref('')
+const phoneNumber = ref('')
+const email = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+const isMarketing = ref('')
+const errorMessage = ref('')
 
-const emit = defineEmits(['openLoginModal', 'close'])
+const emit = defineEmits(['openLoginModal', 'close', 'signupData'])
 
 const openLogin = () => {
   showLoginModal.value = true
@@ -202,6 +222,77 @@ const closeSignup = () => {
   showLoginModal.value = true
   emit('close', true)
   return
+}
+
+const validateEmail = (email: string) => {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  return re.test(email)
+}
+
+const validatePhoneNumber = (phoneNumber: string) => {
+  const re = /^\d{10}$/ // Simple validation for a 10-digit phone number
+  return re.test(phoneNumber)
+}
+
+const submitForm = () => {
+  // Clear previous error message
+  errorMessage.value = ''
+
+  // Basic validation for required fields
+  if (
+    !firstName.value ||
+    !lastName.value ||
+    !address.value ||
+    !phoneNumber.value ||
+    !email.value ||
+    !password.value ||
+    !confirmPassword.value
+  ) {
+    errorMessage.value = 'Please, fill in all required fields'
+    return
+  }
+
+  // Email format validation
+  if (!validateEmail(email.value)) {
+    errorMessage.value = 'Please, enter a valid email address'
+    return
+  }
+
+  // Phone number format validation
+  if (!validatePhoneNumber(phoneNumber.value)) {
+    errorMessage.value = 'Please, enter a valid phone number'
+    return
+  }
+
+  if (password.value.length < 8) {
+    errorMessage.value = 'Passwords too short, minimum of 8 chars'
+    return
+  }
+
+  // Password and confirm password match validation
+  if (password.value !== confirmPassword.value) {
+    errorMessage.value = 'Passwords do not match'
+    return
+  }
+
+  errorMessage.value = ''
+
+  const formData = {
+    firstName: firstName.value,
+    lastName: lastName.value,
+    address: address.value,
+    phoneNumber: phoneNumber.value,
+    email: email.value,
+    password: password.value,
+    confirmPassword: confirmPassword.value,
+    isMarketing: isMarketing.value,
+  }
+
+  // Emit the form data to the parent component
+  emit('signupData', formData)
+
+  // Close the signup modal
+  closeSignup()
 }
 </script>
 

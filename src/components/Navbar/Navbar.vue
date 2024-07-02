@@ -117,12 +117,22 @@
               CART (0)
             </button>
             <button
+              v-if="!store.isAuth"
               @click="showLoginModal = true"
               aria-label="Login"
               type="button"
               class="relative rounded-sm bg-company p-1 text-white flex border border-white px-6 py-2.5"
             >
               LOGIN
+            </button>
+            <button
+              v-if="store.isAuth"
+              @click="showLoginModal = true"
+              aria-label="Login"
+              type="button"
+              class="relative rounded-sm bg-company p-1 text-white flex border border-white px-6 py-2.5"
+            >
+              LOGOUT
             </button>
           </div>
         </div>
@@ -202,12 +212,22 @@
           CART (0)
         </button>
         <button
-          @click="showLoginModal"
+          v-if="!store.isAuth"
+          @click="showLoginModal = true"
           aria-label="Login"
           type="button"
           class="relative rounded-sm bg-company p-1 text-white flex border border-white px-6 py-2.5"
         >
           LOGIN
+        </button>
+        <button
+          v-if="store.isAuth"
+          @click="showLoginModal = true"
+          aria-label="Login"
+          type="button"
+          class="relative rounded-sm bg-company p-1 text-white flex border border-white px-6 py-2.5"
+        >
+          LOGOUT
         </button>
       </div>
     </DisclosurePanel>
@@ -216,15 +236,18 @@
     v-if="showLoginModal"
     @close="showLoginModal = false"
     @openSignupModal="handleSignupModal"
+    @loginData="handleLogin"
   />
   <SignupModal
     v-if="showSignupModal"
     @close="showSignupModal = false"
     @openLoginModal="handleLoginModal"
+    @signupData="handleSignup"
   />
 </template>
 
 <script lang="ts" setup>
+import axios from 'axios'
 import {
   Disclosure,
   DisclosureButton,
@@ -239,6 +262,7 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { ref } from 'vue'
 import LoginModal from '../Login/Login.vue'
 import SignupModal from '../Signup/Signup.vue'
+import { useAuthStore } from '../../store/auth'
 
 interface NavigationItem {
   name: string
@@ -264,7 +288,6 @@ const products: ProductItem[] = [
 ]
 
 const emit = defineEmits(['openLoginModal'])
-// const showLoginModal = ref(false)
 const showLoginModal = ref(false)
 const showSignupModal = ref(false)
 
@@ -276,6 +299,57 @@ const handleSignupModal = (value: boolean) => {
 const handleLoginModal = (value: boolean) => {
   showSignupModal.value = false
   showLoginModal.value = value
+}
+
+const store = useAuthStore()
+
+const handleLogin = async (formData: {
+  email: string
+  password: string
+  remember: boolean
+}) => {
+  try {
+    const response = await axios.post(
+      'https://pet-shop.buckhill.com.hr/api/v1/admin/login',
+      formData
+    )
+    store.setToken(response.data.data.token)
+  } catch (error: any) {
+    console.error('Login failed:', error.response?.data || error.message)
+  }
+}
+
+const handleSignup = async (formData: {
+  firstName: string
+  lastName: string
+  address: string
+  phoneNumber: string
+  email: string
+  password: string
+  confirmPassword: string
+  isMarketing: boolean
+}) => {
+  try {
+    const data = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      address: formData.address,
+      phone_number: formData.phoneNumber,
+      email: formData.email,
+      password: formData.password,
+      password_confirmation: formData.confirmPassword,
+      is_marketing: formData.isMarketing,
+    }
+
+    const response = await axios.post(
+      'https://pet-shop.buckhill.com.hr/api/v1/user/create',
+      data
+    )
+    store.setToken(response.data.data.token)
+    store.setUser(response.data.data)
+  } catch (error: any) {
+    console.error('Login failed:', error.response?.data || error.message)
+  }
 }
 </script>
 

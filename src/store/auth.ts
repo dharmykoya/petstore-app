@@ -1,0 +1,82 @@
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+
+// Define the user interface
+interface User {
+  uuid: string
+  firstName: string
+  lastName: string
+  address: string
+  avatar: string
+  phoneNumber: string
+  email: string
+  isMarketing: boolean
+  updatedAt: Date | null
+  createdAt: Date | null
+}
+
+interface LoginResponse {
+  uuid: string
+  first_name: string
+  last_name: string
+  address: string
+  avatar: string
+  phone_number: string
+  email: string
+  isMarketing: boolean
+  updatedAt: Date | null
+  createdAt: Date | null
+}
+
+export const useAuthStore = defineStore('auth', () => {
+  const token = ref<string | null>(null)
+  const user = ref<User>({
+    uuid: '',
+    firstName: '',
+    lastName: '',
+    address: '',
+    phoneNumber: '',
+    email: '',
+    avatar: '',
+    isMarketing: false,
+    updatedAt: null,
+    createdAt: null,
+  })
+
+  // Initialize token from local storage
+  const initializeToken = () => {
+    const localStorageToken = localStorage.getItem('token')
+    if (localStorageToken) {
+      token.value = localStorageToken
+    }
+  }
+
+  const setToken = (newToken: string) => {
+    token.value = newToken
+    localStorage.setItem('token', newToken)
+  }
+
+  const setUser = (userResponse: LoginResponse) => {
+    user.value.uuid = userResponse.uuid
+    user.value.firstName = userResponse.first_name
+    user.value.lastName = userResponse.last_name
+    user.value.address = userResponse.address
+    user.value.avatar = userResponse.avatar
+    user.value.phoneNumber = userResponse.phone_number
+    user.value.email = userResponse.email
+    user.value.isMarketing = userResponse.isMarketing
+    user.value.updatedAt = userResponse.updatedAt
+    user.value.createdAt = userResponse.createdAt
+  }
+
+  const isAuth = computed(() => token.value !== null)
+
+  initializeToken()
+  return {
+    token,
+    setToken,
+    isAuth,
+    user,
+    setUser,
+  }
+})

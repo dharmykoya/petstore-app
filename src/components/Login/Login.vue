@@ -17,13 +17,17 @@
             Log In
           </h2>
         </div>
-        <form class="space-y-6 mt-4" action="#" method="POST">
+        <div v-if="errorMessage !== ''" class="text-red-500 text-center">
+          {{ errorMessage }}
+        </div>
+        <form class="space-y-6 mt-4" @submit.prevent="submitForm">
           <div>
             <label for="email" class="block text-lg leading-6 text-gray-500"
               >Email</label
             >
             <div class="mt-2">
               <input
+                v-model="email"
                 id="email"
                 name="email"
                 type="email"
@@ -45,6 +49,7 @@
             </div>
             <div class="mt-2">
               <input
+                v-model="password"
                 id="password"
                 name="password"
                 type="password"
@@ -59,6 +64,7 @@
           <div class="flex items-center">
             <div class="mr-2">
               <input
+                v-model="remember"
                 id="promotions"
                 name="promotions"
                 type="checkbox"
@@ -99,10 +105,15 @@
   
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useAuthStore } from '../../store/auth'
 
 const showSignupModal = ref(false)
+const email = ref('')
+const password = ref('')
+const remember = ref(false)
+const errorMessage = ref('')
 
-const emit = defineEmits(['openSignupModal', 'close'])
+const emit = defineEmits(['openSignupModal', 'close', 'loginData'])
 
 const toggleModals = () => {
   showSignupModal.value = true
@@ -114,6 +125,24 @@ const closeLogin = () => {
   emit('close', true)
   return
 }
+
+const submitForm = () => {
+  if (!email.value || !password.value) {
+    errorMessage.value = 'Please, fill in the form correctly'
+    return
+  }
+  const formData = {
+    email: email.value,
+    password: password.value,
+    remember: remember.value,
+  }
+  emit('loginData', formData)
+  closeLogin()
+}
+
+const authStore = useAuthStore()
+
+console.log(authStore)
 </script>
 
 <style scoped>
