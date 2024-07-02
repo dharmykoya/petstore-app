@@ -1,42 +1,43 @@
 <template>
-  <div>
-    <header>
-      <!-- Your header content here -->
-      <navbar />
-    </header>
-    <main>
-      <router-view />
-    </main>
-    <footer>
-      <!-- Your footer content here -->
-    </footer>
+  <div class="flex h-screen">
+    <!-- Sidebar (only for authenticated admin users) -->
+    <sidebar v-if="store.isAuth && store.isAdmin" class="relative z-10" />
 
-    <!-- Modals -->
-    <signup-modal v-if="showSignupModal" @close="showSignupModal = false" />
+    <!-- Main content area -->
+    <div :class="mainContentClass">
+      <header class="relative z-20">
+        <!-- Navbar overlapping the sidebar -->
+        <navbar />
+      </header>
+      <main class="flex-1 overflow-auto mt-16">
+        <router-view />
+      </main>
+      <footer>
+        <!-- Your footer content here -->
+      </footer>
+    </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue'
-import SignupModal from '../components/Signup/Signup.vue'
+<script lang="ts" setup>
 import Navbar from '../components/Navbar/Navbar.vue'
+import Sidebar from '../components/Sidebar/Sidebar.vue'
+import { useAuthStore } from '../store/auth'
+import { computed } from 'vue'
 
-export default defineComponent({
-  name: 'MainLayout',
-  components: {
-    SignupModal,
-    Navbar
-  },
-  setup() {
-    const showSignupModal = ref(false)
+const store = useAuthStore()
 
-    return {
-      showSignupModal,
-    }
-  },
+// Compute class for main content area based on authentication and admin status
+const mainContentClass = computed(() => {
+  return store.isAuth && store.isAdmin
+    ? 'flex-1 flex flex-col pl-64'
+    : 'flex-1 flex flex-col'
 })
 </script>
 
 <style scoped>
-/* Add your styles here */
+/* Adjust padding for main content when sidebar is visible */
+.pl-64 {
+  padding-left: 16rem; /* 64 pixels (16 * 4px) */
+}
 </style>
