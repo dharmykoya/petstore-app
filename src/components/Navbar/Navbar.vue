@@ -77,8 +77,9 @@
                               : 'text-gray-700',
                             'block px-4 py-2 text-sm',
                           ]"
-                          >{{ item.name }}</a
                         >
+                          {{ item.name }}
+                        </a>
                       </MenuItem>
                     </div>
                   </MenuItems>
@@ -97,8 +98,9 @@
                   'rounded-md px-6 py-2 text-md cursor-pointer text-transform: uppercase',
                 ]"
                 :aria-current="item.current ? 'page' : undefined"
-                >{{ item.name }}</a
               >
+                {{ item.name }}
+              </a>
             </div>
           </div>
         </div>
@@ -115,11 +117,22 @@
               CART (0)
             </button>
             <button
+              v-if="!store.isAuth"
+              @click="showLoginModal = true"
               aria-label="Login"
               type="button"
               class="relative rounded-sm bg-company p-1 text-white flex border border-white px-6 py-2.5"
             >
               LOGIN
+            </button>
+            <button
+              v-if="store.isAuth"
+              @click="showLoginModal = true"
+              aria-label="Login"
+              type="button"
+              class="relative rounded-sm bg-company p-1 text-white flex border border-white px-6 py-2.5"
+            >
+              LOGOUT
             </button>
           </div>
         </div>
@@ -167,8 +180,9 @@
                       active ? 'bg-gray-100 text-gray-900' : 'text-gray-700',
                       'block px-4 py-2 text-sm',
                     ]"
-                    >{{ item.name }}</a
                   >
+                    {{ item.name }}
+                  </a>
                 </MenuItem>
               </div>
             </MenuItems>
@@ -186,8 +200,9 @@
             'block rounded-md text-base px-2 py-2 text-white text-transform: uppercase',
           ]"
           :aria-current="item.current ? 'page' : undefined"
-          >{{ item.name }}</DisclosureButton
         >
+          {{ item.name }}
+        </DisclosureButton>
         <button
           aria-label="View cart"
           type="button"
@@ -197,18 +212,42 @@
           CART (0)
         </button>
         <button
+          v-if="!store.isAuth"
+          @click="showLoginModal = true"
           aria-label="Login"
           type="button"
           class="relative rounded-sm bg-company p-1 text-white flex border border-white px-6 py-2.5"
         >
           LOGIN
         </button>
+        <button
+          v-if="store.isAuth"
+          @click="showLoginModal = true"
+          aria-label="Login"
+          type="button"
+          class="relative rounded-sm bg-company p-1 text-white flex border border-white px-6 py-2.5"
+        >
+          LOGOUT
+        </button>
       </div>
     </DisclosurePanel>
   </Disclosure>
+  <LoginModal
+    v-if="showLoginModal"
+    @close="showLoginModal = false"
+    @openSignupModal="handleSignupModal"
+    @loginData="handleLogin"
+  />
+  <SignupModal
+    v-if="showSignupModal"
+    @close="showSignupModal = false"
+    @openLoginModal="handleLoginModal"
+    @signupData="handleSignup"
+  />
 </template>
 
-<script setup>
+<script lang="ts" setup>
+import axios from 'axios'
 import {
   Disclosure,
   DisclosureButton,
@@ -219,17 +258,101 @@ import {
   MenuItems,
 } from '@headlessui/vue'
 import { ShoppingCartIcon, ChevronDownIcon } from '@heroicons/vue/16/solid'
-import { Bars3Icon, BellIcon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { ref } from 'vue'
+import LoginModal from '../Login/Login.vue'
+import SignupModal from '../Signup/Signup.vue'
+import { useAuthStore } from '../../store/auth'
 
-const navigation = [
+interface NavigationItem {
+  name: string
+  href: string
+  current: boolean
+}
+
+interface ProductItem {
+  name: string
+  href: string
+}
+
+const navigation: NavigationItem[] = [
   { name: 'Promotions', href: '#promotions', current: false },
   { name: 'Blog', href: '#blog', current: false },
 ]
 
-const products = [
-  { name: 'Shoes', href: '#shoes', current: false },
-  { name: 'Bags', href: '#bags', current: false },
-  { name: 'Men', href: '#men', current: false },
-  { name: 'Women', href: '#women', current: false },
+const products: ProductItem[] = [
+  { name: 'Shoes', href: '#shoes' },
+  { name: 'Bags', href: '#bags' },
+  { name: 'Men', href: '#men' },
+  { name: 'Women', href: '#women' },
 ]
+
+const emit = defineEmits(['openLoginModal'])
+const showLoginModal = ref(false)
+const showSignupModal = ref(false)
+
+const handleSignupModal = (value: boolean) => {
+  showSignupModal.value = value
+  showLoginModal.value = false
+}
+
+const handleLoginModal = (value: boolean) => {
+  showSignupModal.value = false
+  showLoginModal.value = value
+}
+
+const store = useAuthStore()
+
+const handleLogin = async (formData: {
+  email: string
+  password: string
+  remember: boolean
+}) => {
+  try {
+    const response = await axios.post(
+      'https://pet-shop.buckhill.com.hr/api/v1/admin/login',
+      formData
+    )
+    store.setToken(response.data.data.token)
+  } catch (error: any) {
+    console.error('Login failed:', error.response?.data || error.message)
+  }
+}
+
+const handleSignup = async (formData: {
+  firstName: string
+  lastName: string
+  address: string
+  phoneNumber: string
+  email: string
+  password: string
+  confirmPassword: string
+  isMarketing: boolean
+}) => {
+  try {
+    const data = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      address: formData.address,
+      phone_number: formData.phoneNumber,
+      email: formData.email,
+      password: formData.password,
+      password_confirmation: formData.confirmPassword,
+      is_marketing: formData.isMarketing,
+    }
+
+    const response = await axios.post(
+      'https://pet-shop.buckhill.com.hr/api/v1/user/create',
+      data
+    )
+    store.setToken(response.data.data.token)
+    store.setUser(response.data.data)
+  } catch (error: any) {
+    console.error('Login failed:', error.response?.data || error.message)
+  }
+}
 </script>
+
+
+<style scoped>
+</style>

@@ -18,12 +18,14 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
+import SignupModal from '../components/Signup/Signup.vue'
 import Navbar from '../components/Navbar/Navbar.vue'
 
 export default defineComponent({
   name: 'MainLayout',
   components: {
-    Navbar,
+    SignupModal,
+    Navbar
   },
   setup() {
     const showSignupModal = ref(false)
