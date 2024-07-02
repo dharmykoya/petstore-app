@@ -1,11 +1,9 @@
 <template>
   <div
     class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center"
-    @click.self="$emit('close')"
+    @click.self="closeSignup"
   >
-    <div
-      class="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8"
-    >
+    <div class="bg-white p-6 rounded-lg shadow-lg sm:w-full sm:max-w-xl">
       <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-lg bg-white py-6 px-12">
         <div class="">
           <img
@@ -177,9 +175,9 @@
 
           <div class="flex items-center justify-center">
             <div class="text-sm">
-              <a href="#" class="text-blue-500"
-                >Already have an account? Login</a
-              >
+              <button class="text-blue-500" @click="openLogin">
+                Already have an account? Login
+              </button>
             </div>
           </div>
         </form>
@@ -189,6 +187,22 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+
+const showLoginModal = ref(false)
+
+const emit = defineEmits(['openLoginModal', 'close'])
+
+const openLogin = () => {
+  showLoginModal.value = true
+  emit('openLoginModal', true)
+}
+
+const closeSignup = () => {
+  showLoginModal.value = true
+  emit('close', true)
+  return
+}
 </script>
 
 <style scoped>

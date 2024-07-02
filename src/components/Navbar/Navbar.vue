@@ -117,6 +117,7 @@
               CART (0)
             </button>
             <button
+              @click="showLoginModal = true"
               aria-label="Login"
               type="button"
               class="relative rounded-sm bg-company p-1 text-white flex border border-white px-6 py-2.5"
@@ -201,6 +202,7 @@
           CART (0)
         </button>
         <button
+          @click="showLoginModal"
           aria-label="Login"
           type="button"
           class="relative rounded-sm bg-company p-1 text-white flex border border-white px-6 py-2.5"
@@ -210,6 +212,16 @@
       </div>
     </DisclosurePanel>
   </Disclosure>
+  <LoginModal
+    v-if="showLoginModal"
+    @close="showLoginModal = false"
+    @openSignupModal="handleSignupModal"
+  />
+  <SignupModal
+    v-if="showSignupModal"
+    @close="showSignupModal = false"
+    @openLoginModal="handleLoginModal"
+  />
 </template>
 
 <script lang="ts" setup>
@@ -224,6 +236,9 @@ import {
 } from '@headlessui/vue'
 import { ShoppingCartIcon, ChevronDownIcon } from '@heroicons/vue/16/solid'
 import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
+import { ref } from 'vue'
+import LoginModal from '../Login/Login.vue'
+import SignupModal from '../Signup/Signup.vue'
 
 interface NavigationItem {
   name: string
@@ -247,9 +262,23 @@ const products: ProductItem[] = [
   { name: 'Men', href: '#men' },
   { name: 'Women', href: '#women' },
 ]
+
+const emit = defineEmits(['openLoginModal'])
+// const showLoginModal = ref(false)
+const showLoginModal = ref(false)
+const showSignupModal = ref(false)
+
+const handleSignupModal = (value: boolean) => {
+  showSignupModal.value = value
+  showLoginModal.value = false
+}
+
+const handleLoginModal = (value: boolean) => {
+  showSignupModal.value = false
+  showLoginModal.value = value
+}
 </script>
 
 
 <style scoped>
-/* Add your component-specific styles here */
 </style>
