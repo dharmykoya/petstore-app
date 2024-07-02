@@ -1,42 +1,32 @@
 <template>
-  <div>
-    <header>
-      <!-- Your header content here -->
-      <navbar />
-    </header>
-    <main>
-      <router-view />
-    </main>
-    <footer>
-      <!-- Your footer content here -->
-    </footer>
-
-    <!-- Modals -->
-    <signup-modal v-if="showSignupModal" @close="showSignupModal = false" />
+  <div class="flex h-screen">
+    <!-- Main content area -->
+    <div class="flex-1 flex flex-col">
+      <header class="relative z-20">
+        <!-- Navbar overlapping the sidebar -->
+        <navbar />
+      </header>
+      <div class="flex relative h-full">
+        <!-- Sidebar -->
+        <sidebar />
+        <main class="flex-1 overflow-auto mt-2 w-10/12 absolute main-layout">
+          <router-view />
+        </main>
+      </div>
+      <footer>
+        <!-- Your footer content here -->
+      </footer>
+    </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue'
-import SignupModal from '../components/Signup/Signup.vue'
+<script lang="ts" setup>
 import Navbar from '../components/Navbar/Navbar.vue'
-
-export default defineComponent({
-  name: 'MainLayout',
-  components: {
-    SignupModal,
-    Navbar
-  },
-  setup() {
-    const showSignupModal = ref(false)
-
-    return {
-      showSignupModal,
-    }
-  },
-})
+import Sidebar from '../components/Sidebar/Sidebar.vue'
 </script>
 
 <style scoped>
-/* Add your styles here */
+.main-layout {
+  left: 16.67%;
+}
 </style>
