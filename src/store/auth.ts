@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { setCookie, getCookie, removeCookie } from '../util/cookie'
 
 // Define the user interface
 interface User {
@@ -10,6 +11,7 @@ interface User {
   avatar: string
   phoneNumber: string
   email: string
+  isAdmin: boolean
   isMarketing: boolean
   updatedAt: Date | null
   createdAt: Date | null
@@ -24,6 +26,7 @@ interface LoginResponse {
   phone_number: string
   email: string
   isMarketing: boolean
+  is_admin?: boolean
   updatedAt: Date | null
   createdAt: Date | null
 }
@@ -36,6 +39,7 @@ export const useAuthStore = defineStore('auth', () => {
     lastName: '',
     address: '',
     phoneNumber: '',
+    isAdmin: false,
     email: '',
     avatar: '',
     isMarketing: false,
@@ -45,7 +49,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Initialize token from local storage
   const initializeToken = () => {
-    const localStorageToken = localStorage.getItem('token')
+    const localStorageToken = getCookie('token')
     if (localStorageToken) {
       token.value = localStorageToken
     }
@@ -53,7 +57,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   const setToken = (newToken: string) => {
     token.value = newToken
-    localStorage.setItem('token', newToken)
+    setCookie('token', newToken, 7)
+  }
+
+  const logOut = () => {
+    token.value = ''
+    removeCookie('token')
   }
 
   const setUser = (userResponse: LoginResponse) => {
@@ -67,9 +76,11 @@ export const useAuthStore = defineStore('auth', () => {
     user.value.isMarketing = userResponse.isMarketing
     user.value.updatedAt = userResponse.updatedAt
     user.value.createdAt = userResponse.createdAt
+    user.value.isAdmin = !!userResponse.is_admin
   }
 
   const isAuth = computed(() => token.value !== null)
+  const isAdmin = computed(() => !!user.value.isAdmin)
 
   initializeToken()
   return {
@@ -78,5 +89,7 @@ export const useAuthStore = defineStore('auth', () => {
     isAuth,
     user,
     setUser,
+    logOut,
+    isAdmin,
   }
 })

@@ -117,7 +117,7 @@
               CART (0)
             </button>
             <button
-              v-if="!store.isAuth"
+              v-if="!isAuth"
               @click="showLoginModal = true"
               aria-label="Login"
               type="button"
@@ -126,14 +126,28 @@
               LOGIN
             </button>
             <button
-              v-if="store.isAuth"
-              @click="showLoginModal = true"
+              v-if="isAuth"
+              @click="handleLogout"
               aria-label="Login"
               type="button"
               class="relative rounded-sm bg-company p-1 text-white flex border border-white px-6 py-2.5"
             >
               LOGOUT
             </button>
+            <!-- Profile dropdown -->
+            <div>
+              <div
+                class="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 ml-2"
+              >
+                <span class="absolute -inset-1.5" />
+                <span class="sr-only"></span>
+                <img
+                  class="h-8 w-8 rounded-full"
+                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                  alt=""
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -212,7 +226,7 @@
           CART (0)
         </button>
         <button
-          v-if="!store.isAuth"
+          v-if="!isAuth"
           @click="showLoginModal = true"
           aria-label="Login"
           type="button"
@@ -221,8 +235,8 @@
           LOGIN
         </button>
         <button
-          v-if="store.isAuth"
-          @click="showLoginModal = true"
+          v-if="isAuth"
+          @click="handleLogout"
           aria-label="Login"
           type="button"
           class="relative rounded-sm bg-company p-1 text-white flex border border-white px-6 py-2.5"
@@ -259,7 +273,7 @@ import {
 } from '@headlessui/vue'
 import { ShoppingCartIcon, ChevronDownIcon } from '@heroicons/vue/16/solid'
 import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import LoginModal from '../Login/Login.vue'
 import SignupModal from '../Signup/Signup.vue'
 import { useAuthStore } from '../../store/auth'
@@ -278,6 +292,7 @@ interface ProductItem {
 const navigation: NavigationItem[] = [
   { name: 'Promotions', href: '#promotions', current: false },
   { name: 'Blog', href: '#blog', current: false },
+  { name: 'Orders', href: '/orders', current: false },
 ]
 
 const products: ProductItem[] = [
@@ -310,9 +325,11 @@ const handleLogin = async (formData: {
 }) => {
   try {
     const response = await axios.post(
-      'https://pet-shop.buckhill.com.hr/api/v1/admin/login',
+      'https://pet-shop.buckhill.com.hr/api/v1/user/login',
       formData
     )
+    console.log(response.data)
+
     store.setToken(response.data.data.token)
   } catch (error: any) {
     console.error('Login failed:', error.response?.data || error.message)
@@ -351,6 +368,12 @@ const handleSignup = async (formData: {
     console.error('Login failed:', error.response?.data || error.message)
   }
 }
+
+const handleLogout = () => {
+  store.logOut()
+}
+
+const isAuth = computed(() => store.isAuth)
 </script>
 
 
