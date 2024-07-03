@@ -1,9 +1,48 @@
 <template>
   <div class="card md:w-8/12 lg:w-8/12 mx-auto max-w-4xl px-2 sm:px-0">
-    <h1 class="font-bold text-2xl">Order History</h1>
-    <p class="text-gray-400 text-base">
-      Check the status of recent orders, download order, and view order.
-    </p>
+    <div>
+      <div>
+        <h1 class="font-bold text-2xl">Order History</h1>
+        <p class="text-gray-400 text-base">
+          Check the status of recent orders, download order, and view order.
+        </p>
+      </div>
+    </div>
+    <div class="flex items-center">
+      <div class="mt-4 mr-6">
+        <button
+          type="button"
+          class="text-black flex items-center border-b"
+          @click="toggleSort"
+          aria-haspopup="true"
+          aria-controls="overlay_menu"
+        >
+          <span class="text-base mr-2">Sort</span>
+          <ChevronDownIcon class="h-4 w-4" />
+        </button>
+        <Menu
+          ref="sortMenu"
+          id="overlay_menu"
+          :model="sortItems"
+          @click="handleSortBy"
+          :popup="true"
+        />
+      </div>
+      <div class="mt-4">
+        <button
+          @click="handleOrderBy('desc')"
+          :class="['p-2', orderBy === 'desc' ? 'border' : '']"
+        >
+          <ArrowLongDownIcon class="h-5 w-5" />
+        </button>
+        <button
+          @click="handleOrderBy('asc')"
+          :class="['p-2', orderBy === 'asc' ? 'border' : '']"
+        >
+          <ArrowLongUpIcon class="h-5 w-5" />
+        </button>
+      </div>
+    </div>
     <Paginator
       :rows="perPage"
       :totalRecords="totalRecords"
@@ -44,6 +83,7 @@
                     </div>
                     <div>
                       <button
+                        @click="downloadOrder(item.uuid)"
                         aria-label="Login"
                         type="button"
                         class="relative rounded-md bg-white p-1 text-company text-sm flex border border-company px-4 py-2"
@@ -70,6 +110,7 @@
                         View Order
                       </button>
                       <button
+                        @click="downloadOrder(item.uuid)"
                         aria-label="Login"
                         type="button"
                         class="relative w-32 rounded-md bg-white p-1 text-company text-xs flex border border-company px-4 py-2 mb-2"
@@ -150,21 +191,23 @@
 
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import DataView from 'primevue/dataview'
-import Popover from 'primevue/popover'
 import { OrderService } from '../../services/orderService'
 import {
   OrderInterface,
   OrderStatusInterface,
 } from '../../util/interfaces/OrderInterface'
 import dayjs from 'dayjs'
-import { CheckCircleIcon, ShoppingBagIcon } from '@heroicons/vue/16/solid'
+import { ChevronDownIcon, ShoppingBagIcon } from '@heroicons/vue/16/solid'
 import {
+  ArrowLongDownIcon,
+  ArrowLongUpIcon,
   ChevronDoubleDownIcon,
   ChevronDoubleUpIcon,
   EllipsisVerticalIcon,
 } from '@heroicons/vue/24/outline'
+import { objectToQueryString } from '../../util/helper'
 
 const formatDate = (date: Date) => {
   return dayjs(date).format('MMMM DD, YYYY')
@@ -178,14 +221,64 @@ const perPage = ref(10)
 const openOrderProductId = ref('')
 const openOrderMenuId = ref('')
 
+const sortMenu = ref(null)
+const sortBy = ref('Sort By')
+const orderBy = ref('')
+const sortItems = ref([
+  {
+    items: [
+      {
+        label: 'paid',
+      },
+      {
+        label: 'pending payment',
+      },
+      {
+        label: 'canceled',
+      },
+      {
+        label: 'open',
+      },
+      {
+        label: 'shipped',
+      },
+      {
+        label: 'delivered',
+      },
+    ],
+  },
+])
+
 const loadOrders = async (page: number) => {
   try {
-    const data = await OrderService.getOrders(page)
+    interface QueryInterface {
+      desc?: string
+      sortBy?: string
+      page?: number
+    }
+
+    const query: QueryInterface = {}
+
+    query.page = page
+
+    if (orderBy.value === 'desc') {
+      query.desc = 'true'
+    }
+    if (orderBy.value === 'asc') {
+      query.desc = 'false'
+    }
+    if (sortBy.value !== 'Sort By') {
+      query['sortBy'] = sortBy.value
+    }
+
+    console.log(query)
+    console.log(objectToQueryString(query))
+
+    const data = await OrderService.getOrders(objectToQueryString(query))
     totalRecords.value = data.total
     currentPage.value = data.current_page
     perPage.value = data.per_page
     orders.value = data.data
-    console.log(data.data[0].products)
   } catch (error) {
     console.error('Error loading orders:', error)
   }
@@ -249,6 +342,49 @@ const toggleOrderMenu = (id: string) => {
   } else {
     openOrderMenuId.value = id
   }
+}
+
+const downloadOrder = async (uuid: string) => {
+  try {
+    const response = await OrderService.downloadOrder(uuid)
+
+    // Create a Blob from the binary data
+    const blob = new Blob([response])
+
+    // Create a link element
+    const link = document.createElement('a')
+    link.href = URL.createObjectURL(blob)
+    link.download = `order_${uuid}.pdf` // Set the file name
+
+    // Append the link to the body
+    document.body.appendChild(link)
+
+    // Programmatically click the link to trigger the download
+    link.click()
+
+    // Clean up and remove the link
+    document.body.removeChild(link)
+  } catch (error) {
+    console.error('Error downloading order:', error)
+  }
+}
+
+const toggleSort = (event: any) => {
+  if (sortMenu.value) {
+    sortMenu.value.toggle(event)
+  }
+}
+
+const handleSortBy = (event: any) => {
+  if (sortMenu.value) {
+    console.log(event.target.textContent)
+  }
+  sortBy.value = event.target.textContent
+}
+
+const handleOrderBy = (value: string) => {
+  orderBy.value = value
+  loadOrders(currentPage.value)
 }
 </script>
 <style scoped>

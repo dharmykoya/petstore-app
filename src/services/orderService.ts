@@ -1,13 +1,27 @@
 import api from './api'
 export const OrderService = {
-  async getOrders(page?: number) {
+  async getOrders(query: string) {
     try {
-      const response = await api.get(`/orders?page=${page}`)
+      const response = await api.get(`/orders${query}`)
       console.log(response.data)
 
       return response.data
     } catch (error) {
       console.error('Error fetching orders:', error)
+      throw error
+    }
+  },
+
+  async downloadOrder(uuid: string) {
+    try {
+      const response = await api.get(`order/${uuid}/download`, {
+        responseType: 'blob',
+      })
+      console.log(response.data)
+
+      return response.data
+    } catch (error) {
+      console.error('Error downloading order:', error)
       throw error
     }
   },
