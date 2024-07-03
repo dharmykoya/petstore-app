@@ -11,6 +11,7 @@ import Button from 'primevue/button'
 import DataView from 'primevue/dataview'
 // import Popover from 'primevue/popover'
 import Paginator from 'primevue/paginator'
+import Menu from 'primevue/menu'
 import 'primeicons/primeicons.css'
 
 const pinia = createPinia()
@@ -32,6 +33,7 @@ app.use(PrimeVue, {
 app.component('Tag', Tag)
 app.component('Button', Button)
 app.component('Dataview', DataView)
+app.component('Menu', Menu)
 // app.component('Popover', Popover)
 app.component('Paginator', Paginator)
 app.mount('#app')
