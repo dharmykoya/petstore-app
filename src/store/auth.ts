@@ -63,6 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
   const logOut = () => {
     token.value = ''
     removeCookie('token')
+    window.location.href = '/'
   }
 
   const setUser = (userResponse: LoginResponse) => {

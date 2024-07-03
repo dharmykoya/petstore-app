@@ -1,6 +1,7 @@
-import { createRouter, createWebHistory } from 'vue-router';
-import MainLayout from './layouts/Mainlayout.vue';
-import HomePage from './pages/HomePage.vue';
+import { createRouter, createWebHistory } from 'vue-router'
+import MainLayout from './layouts/Mainlayout.vue'
+import HomePage from './pages/HomePage.vue'
+import OrderPage from './pages/OrderPage.vue'
 
 const routes = [
   {
@@ -14,11 +15,22 @@ const routes = [
       },
     ],
   },
-];
+  {
+    path: '/orders',
+    component: MainLayout,
+    children: [
+      {
+        path: '',
+        name: 'Order',
+        component: OrderPage,
+      },
+    ],
+  },
+]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-});
+})
 
-export default router;
+export default router
