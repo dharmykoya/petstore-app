@@ -122,13 +122,25 @@
                 <div class="flex justify-between mb-3">
                   <p class="text-sm text-gray-500">Delivery Fee</p>
                   <p class="text-sm text-gray-700">
-                    ${{ selectedOrder.delivery_fee.toFixed(2) }}
+                    CNY {{ selectedOrder.delivery_fee.toFixed(2) }}
                   </p>
                 </div>
                 <div class="flex justify-between">
-                  <p class="text-sm text-gray-500">Total</p>
+                  <p class="text-sm text-gray-500">Total (CNY)</p>
                   <p class="text-sm text-gray-700 font-bold">
-                    ${{ selectedOrder.amount.toFixed(2) }}
+                    ¥ {{ selectedOrder.amount.toFixed(2) }}
+                  </p>
+                </div>
+                <div
+                  class="flex justify-between"
+                  v-if="selectedCurrency.code != 'CNY'"
+                >
+                  <p class="text-sm text-gray-500">
+                    Total ({{ selectedCurrency.code }})
+                  </p>
+                  <p class="text-sm text-gray-700 font-bold">
+                    {{ selectedCurrency.symbol
+                    }}{{ convertCurrency(selectedOrder.amount.toFixed(2)) }}
                   </p>
                 </div>
               </div>
@@ -243,7 +255,7 @@
             <td class="border-l border-r p-2.5 w-4/12">
               <p class="text-base text-gray-700">
                 {{ store.user.firstName }}
-                  {{ store.user.lastName }}
+                {{ store.user.lastName }}
               </p>
               <p class="my-2 text-sm text-gray-500">
                 {{ store.user.address }}
@@ -287,7 +299,7 @@
             </td>
             <td class="border-l border-r p-2.5 w-4/12">
               <p class="text-xs text-gray-500">
-                PAYMENT TYPE/STATUS:
+                PAYMENT TYPE:
                 <strong class="font-bold text-gray-700">{{
                   selectedOrder.payment?.type || 'Unpaid'
                 }}</strong>
@@ -310,14 +322,25 @@
               <p class="text-xs text-gray-500">
                 DELIVERY FEE:
                 <strong class="font-bold text-gray-700"
-                  >${{ selectedOrder.delivery_fee.toFixed(2) }}</strong
+                  >CNY {{ selectedOrder.delivery_fee.toFixed(2) }}</strong
                 >
               </p>
-
               <p class="text-xs text-gray-500">
-                TOTAL:
+                TOTAL (CNY):
                 <strong class="font-bold text-gray-700"
-                  >${{ selectedOrder.delivery_fee.toFixed(2) }}</strong
+                  >¥ {{ selectedOrder.amount.toFixed(2) }}</strong
+                >
+              </p>
+              <p
+                class="text-xs text-gray-500"
+                v-if="selectedCurrency.code != 'CNY'"
+              >
+                TOTAL ({{ selectedCurrency.code }}):
+                <strong class="font-bold text-gray-700"
+                  >{{ selectedCurrency.symbol
+                  }}{{
+                    convertCurrency(selectedOrder.amount.toFixed(2))
+                  }}</strong
                 >
               </p>
             </td>
@@ -325,7 +348,7 @@
         </tbody>
       </table>
     </div>
-    <div class="h-16"></div>
+    <div class="h-28"></div>
     <div class="px-4" style="margin-top: 100px">
       <table class="border px-3 py-4 w-full">
         <tr>
@@ -399,7 +422,7 @@
       >
         <Column field="uuid" header="ID"></Column>
         <Column field="product" header="Name"></Column>
-        <Column field="price" header="Price"></Column>
+        <Column field="price" header="Price(CNY)"></Column>
         <Column field="quantity" header="Quantity"></Column>
       </DataTable>
     </div>
@@ -407,16 +430,18 @@
 </template>
     
   <script setup lang="ts">
-import { ref, onMounted } from 'vue'
 import { useFormatDate } from '../../composables/useFormatDate'
 import { useGetOrderStatus } from '../../composables/useGetOrderStatus'
 import DataTable from 'primevue/datatable'
 import Column from 'primevue/column'
 import printJS from 'print-js'
 import { useAuthStore } from '../../store/auth'
+import { useCurrency } from '../../composables/useCurrency'
+import { useOrderStore } from '../../store/order'
 
 const emit = defineEmits(['close'])
 const store = useAuthStore()
+const orderStore = useOrderStore()
 
 const closeOrderView = () => {
   emit('close', true)
@@ -425,9 +450,14 @@ const closeOrderView = () => {
 
 const { formatDate } = useFormatDate()
 const { getStatusIcon } = useGetOrderStatus()
+const { convertAmount } = useCurrency()
 
-defineProps({
+const props = defineProps({
   selectedOrder: {
+    type: Object,
+    required: true,
+  },
+  selectedCurrency: {
     type: Object,
     required: true,
   },
@@ -440,18 +470,26 @@ const downloadOrder = async () => {
     console.error('Error downloading order:', error)
   }
 }
+
+const convertCurrency = (amount: number) => {
+  if (props.selectedCurrency) {
+    return convertAmount(amount, orderStore, props.selectedCurrency.code)
+  } else {
+    return amount
+  }
+}
 </script>
 <style scoped>
 .fixed-header {
   overflow-y: auto;
-  max-height: 400px; /* Adjust height as needed */
+  max-height: 400px;
 }
 
 .fixed-header thead th {
   position: sticky;
   top: 0;
   z-index: 1;
-  background-color: white; /* or your preferred header background color */
+  background-color: white;
 }
 </style>
     
