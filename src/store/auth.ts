@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { setCookie, getCookie, removeCookie } from '../util/cookie'
+import { UserService } from '../services/auth.service'
 
 // Define the user interface
 interface User {
@@ -48,9 +49,12 @@ export const useAuthStore = defineStore('auth', () => {
   })
 
   // Initialize token from local storage
-  const initializeToken = () => {
+  const initializeToken = async () => {
     const localStorageToken = getCookie('token')
+
     if (localStorageToken) {
+      const authUser: LoginResponse = await UserService.getUser()
+      setUser(authUser)
       token.value = localStorageToken
     }
   }
