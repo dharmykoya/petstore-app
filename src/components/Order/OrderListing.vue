@@ -50,7 +50,7 @@
       @page="onPageChange"
       class="mt-8"
     ></Paginator>
-    <DataView :value="orders" class="lg:order-container">
+    <DataView :value="orders" class="order-container">
       <template #list="slotProps">
         <div class="flex flex-col mt-4">
           <div v-for="item in slotProps.items" :key="item.uuid">
@@ -74,6 +74,7 @@
                   <div class="hidden sm:flex">
                     <div class="mr-4">
                       <button
+                        @click="handleSelectedOrder(item)"
                         aria-label="Login"
                         type="button"
                         class="relative rounded-md bg-white p-1 text-company text-sm flex border border-company px-4 py-2"
@@ -103,6 +104,7 @@
                       v-if="openOrderMenuId === item.uuid"
                     >
                       <button
+                        @click="handleSelectedOrder(item)"
                         aria-label="Login"
                         type="button"
                         class="relative w-28 rounded-md bg-white p-1 text-company text-xs flex border border-company px-4 py-2 mb-2"
@@ -154,6 +156,7 @@
                 <ul
                   v-show="openOrderProductId === item.uuid"
                   class="collapse-content"
+                  id="order-listing"
                 >
                   <li
                     v-for="product in item.products"
@@ -187,6 +190,11 @@
       </template>
     </DataView>
   </div>
+  <order-view
+    v-if="showOrderViewModal"
+    @close="showOrderViewModal = false"
+    :selectedOrder="selectedOrder"
+  />
 </template>
 
 
@@ -208,6 +216,8 @@ import {
   EllipsisVerticalIcon,
 } from '@heroicons/vue/24/outline'
 import { objectToQueryString } from '../../util/helper'
+import OrderView from '../OrderView/OrderView.vue'
+import printJS from 'print-js'
 
 const formatDate = (date: Date) => {
   return dayjs(date).format('MMMM DD, YYYY')
@@ -248,6 +258,8 @@ const sortItems = ref([
     ],
   },
 ])
+const showOrderViewModal = ref(false)
+const selectedOrder = ref<OrderInterface | null>(null)
 
 const loadOrders = async (page: number) => {
   try {
@@ -270,9 +282,6 @@ const loadOrders = async (page: number) => {
     if (sortBy.value !== 'Sort By') {
       query['sortBy'] = sortBy.value
     }
-
-    console.log(query)
-    console.log(objectToQueryString(query))
 
     const data = await OrderService.getOrders(objectToQueryString(query))
     totalRecords.value = data.total
@@ -327,8 +336,6 @@ const getStatusIcon = (orderStatus: OrderStatusInterface) => {
 }
 
 const toggleOrderProduct = (id: string) => {
-  console.log(id)
-
   if (openOrderProductId.value === id) {
     openOrderProductId.value = ''
   } else {
@@ -346,6 +353,7 @@ const toggleOrderMenu = (id: string) => {
 
 const downloadOrder = async (uuid: string) => {
   try {
+    printJS('order-listing', 'html')
     const response = await OrderService.downloadOrder(uuid)
 
     // Create a Blob from the binary data
@@ -377,7 +385,6 @@ const toggleSort = (event: any) => {
 
 const handleSortBy = (event: any) => {
   if (sortMenu.value) {
-    console.log(event.target.textContent)
   }
   sortBy.value = event.target.textContent
 }
@@ -385,6 +392,11 @@ const handleSortBy = (event: any) => {
 const handleOrderBy = (value: string) => {
   orderBy.value = value
   loadOrders(currentPage.value)
+}
+
+const handleSelectedOrder = (order: OrderInterface) => {
+  selectedOrder.value = order
+  showOrderViewModal.value = true
 }
 </script>
 <style scoped>

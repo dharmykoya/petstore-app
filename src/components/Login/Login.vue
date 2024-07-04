@@ -139,10 +139,6 @@ const submitForm = () => {
   emit('loginData', formData)
   closeLogin()
 }
-
-const authStore = useAuthStore()
-
-console.log(authStore)
 </script>
 
 <style scoped>

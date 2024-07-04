@@ -3,7 +3,6 @@ export const OrderService = {
   async getOrders(query: string) {
     try {
       const response = await api.get(`/orders${query}`)
-      console.log(response.data)
 
       return response.data
     } catch (error) {
@@ -17,7 +16,6 @@ export const OrderService = {
       const response = await api.get(`order/${uuid}/download`, {
         responseType: 'blob',
       })
-      console.log(response.data)
 
       return response.data
     } catch (error) {

@@ -328,7 +328,6 @@ const handleLogin = async (formData: {
       'https://pet-shop.buckhill.com.hr/api/v1/user/login',
       formData
     )
-    console.log(response.data)
 
     store.setToken(response.data.data.token)
   } catch (error: any) {
