@@ -10,22 +10,15 @@
     </div>
     <div class="flex items-center">
       <div class="mt-4 mr-6">
-        <button
-          type="button"
-          class="text-black flex items-center border-b"
-          @click="toggleSort"
-          aria-haspopup="true"
-          aria-controls="overlay_menu"
-        >
-          <span class="text-base mr-2">Sort</span>
-          <ChevronDownIcon class="h-4 w-4" />
-        </button>
-        <Menu
-          ref="sortMenu"
-          id="overlay_menu"
-          :model="sortItems"
-          @click="handleSortBy"
-          :popup="true"
+        <Select
+          v-model="selectedSort"
+          :options="sortItems"
+          optionLabel="name"
+          placeholder="Sort By"
+          checkmark
+          :highlightOnSelect="false"
+          class="w-full md:w-44 md:min-w-44 text-sm"
+          @change="handleSortBy"
         />
       </div>
       <div class="mt-4">
@@ -41,6 +34,17 @@
         >
           <ArrowLongUpIcon class="h-5 w-5" />
         </button>
+      </div>
+      <div class="mt-4 mr-6">
+        <Select
+          v-model="selectedCurrency"
+          :options="currencies"
+          optionLabel="name"
+          placeholder="Select Currency"
+          checkmark
+          :highlightOnSelect="false"
+          class="w-full md:w-44 md:min-w-44 text-sm"
+        />
       </div>
     </div>
     <Paginator
@@ -68,7 +72,10 @@
                     </div>
                     <div class="text-sm">
                       <p class="font-bold">Total Amount</p>
-                      <p>${{ item.amount }}</p>
+                      <p>
+                        {{ selectedCurrency ? selectedCurrency.symbol : 'CNY'
+                        }}{{ convertCurrency(item.amount) }}
+                      </p>
                     </div>
                   </div>
                   <div class="hidden sm:flex">
@@ -80,16 +87,6 @@
                         class="relative rounded-md bg-white p-1 text-company text-sm flex border border-company px-4 py-2"
                       >
                         View Order
-                      </button>
-                    </div>
-                    <div>
-                      <button
-                        @click="downloadOrder(item.uuid)"
-                        aria-label="Login"
-                        type="button"
-                        class="relative rounded-md bg-white p-1 text-company text-sm flex border border-company px-4 py-2"
-                      >
-                        Download Order
                       </button>
                     </div>
                   </div>
@@ -110,14 +107,6 @@
                         class="relative w-28 rounded-md bg-white p-1 text-company text-xs flex border border-company px-4 py-2 mb-2"
                       >
                         View Order
-                      </button>
-                      <button
-                        @click="downloadOrder(item.uuid)"
-                        aria-label="Login"
-                        type="button"
-                        class="relative w-32 rounded-md bg-white p-1 text-company text-xs flex border border-company px-4 py-2 mb-2"
-                      >
-                        Download Order
                       </button>
                     </div>
                   </div>
@@ -173,7 +162,13 @@
                               />
                               <span>{{ product.quantity }}</span>
                             </div>
-                            <p class="mt-0">${{ product.price }}</p>
+                            <p class="mt-0">
+                              {{
+                                selectedCurrency
+                                  ? selectedCurrency.symbol
+                                  : 'CNY'
+                              }}{{ convertCurrency(product.price) }}
+                            </p>
                           </div>
                           <p class="block font-thin mt-2">
                             {{ product.product }}
@@ -194,6 +189,7 @@
     v-if="showOrderViewModal"
     @close="showOrderViewModal = false"
     :selectedOrder="selectedOrder"
+    :selectedCurrency="selectedCurrency"
   />
 </template>
 
@@ -206,7 +202,6 @@ import {
   OrderInterface,
   OrderStatusInterface,
 } from '../../util/interfaces/OrderInterface'
-import dayjs from 'dayjs'
 import { ChevronDownIcon, ShoppingBagIcon } from '@heroicons/vue/16/solid'
 import {
   ArrowLongDownIcon,
@@ -218,10 +213,9 @@ import {
 import { objectToQueryString } from '../../util/helper'
 import OrderView from '../OrderView/OrderView.vue'
 import printJS from 'print-js'
-
-const formatDate = (date: Date) => {
-  return dayjs(date).format('MMMM DD, YYYY')
-}
+import { useOrderStore } from '../../store/order'
+import { useCurrency } from '../../composables/useCurrency'
+import { useFormatDate } from '../../composables/useFormatDate'
 
 const orders = ref<OrderInterface[]>([])
 
@@ -230,34 +224,34 @@ const currentPage = ref(1)
 const perPage = ref(10)
 const openOrderProductId = ref('')
 const openOrderMenuId = ref('')
-
-const sortMenu = ref(null)
-const sortBy = ref('Sort By')
 const orderBy = ref('')
 const sortItems = ref([
-  {
-    items: [
-      {
-        label: 'paid',
-      },
-      {
-        label: 'pending payment',
-      },
-      {
-        label: 'canceled',
-      },
-      {
-        label: 'open',
-      },
-      {
-        label: 'shipped',
-      },
-      {
-        label: 'delivered',
-      },
-    ],
-  },
+  { name: 'Paid', code: 'paid' },
+  { name: 'Pending payment', code: 'pending payment' },
+  { name: 'Canceled', code: 'canceled' },
+  { name: 'Open', code: 'open' },
+  { name: 'Shipped', code: 'shipped' },
+  { name: 'Delivered', code: 'delivered' },
 ])
+
+const { formatDate } = useFormatDate()
+const { convertAmount } = useCurrency()
+interface SelectOption {
+  code: string
+  name: string
+  symbol: string
+}
+const selectedSort = ref<SelectOption | null>(null)
+const selectedCurrency = ref<SelectOption | null>({
+  name: 'CNY',
+  code: 'CNY',
+  symbol: 'CNY',
+})
+const currencies = ref([
+  { name: 'Pounds', code: 'GBP', symbol: '£' },
+  { name: 'Euro', code: 'EUR', symbol: '€' },
+])
+
 const showOrderViewModal = ref(false)
 const selectedOrder = ref<OrderInterface | null>(null)
 
@@ -279,8 +273,9 @@ const loadOrders = async (page: number) => {
     if (orderBy.value === 'asc') {
       query.desc = 'false'
     }
-    if (sortBy.value !== 'Sort By') {
-      query['sortBy'] = sortBy.value
+
+    if (selectedSort.value && selectedSort.value.code !== '') {
+      query['sortBy'] = selectedSort.value.code
     }
 
     const data = await OrderService.getOrders(objectToQueryString(query))
@@ -292,6 +287,7 @@ const loadOrders = async (page: number) => {
     console.error('Error loading orders:', error)
   }
 }
+const orderStore = useOrderStore()
 
 onMounted(() => {
   loadOrders(currentPage.value)
@@ -351,42 +347,8 @@ const toggleOrderMenu = (id: string) => {
   }
 }
 
-const downloadOrder = async (uuid: string) => {
-  try {
-    printJS('order-listing', 'html')
-    const response = await OrderService.downloadOrder(uuid)
-
-    // Create a Blob from the binary data
-    const blob = new Blob([response])
-
-    // Create a link element
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(blob)
-    link.download = `order_${uuid}.pdf` // Set the file name
-
-    // Append the link to the body
-    document.body.appendChild(link)
-
-    // Programmatically click the link to trigger the download
-    link.click()
-
-    // Clean up and remove the link
-    document.body.removeChild(link)
-  } catch (error) {
-    console.error('Error downloading order:', error)
-  }
-}
-
-const toggleSort = (event: any) => {
-  if (sortMenu.value) {
-    sortMenu.value.toggle(event)
-  }
-}
-
-const handleSortBy = (event: any) => {
-  if (sortMenu.value) {
-  }
-  sortBy.value = event.target.textContent
+const handleSortBy = () => {
+  loadOrders(currentPage.value)
 }
 
 const handleOrderBy = (value: string) => {
@@ -397,6 +359,14 @@ const handleOrderBy = (value: string) => {
 const handleSelectedOrder = (order: OrderInterface) => {
   selectedOrder.value = order
   showOrderViewModal.value = true
+}
+
+const convertCurrency = (amount: number) => {
+  if (selectedCurrency.value) {
+    return convertAmount(amount, orderStore, selectedCurrency.value.code)
+  } else {
+    return amount
+  }
 }
 </script>
 <style scoped>

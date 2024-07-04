@@ -11,7 +11,6 @@ const setWindowSize = (width: number, height: number): void => {
 describe('Navbar Component', () => {
   test('renders correctly when products dropdown is closed', async () => {
     const wrapper = mount(Navbar)
-    // console.log(wrapper.html())
 
     // Check if the mobile menu button exists
     const mobileMenuButton = wrapper.find('[aria-label="Open main menu"]')
