@@ -1,7 +1,7 @@
 <template>
   <order-listing />
-</template> 
-  <script setup>
+</template>
+<script setup>
 import OrderListing from '../components/Order/OrderListing.vue'
 const sortOptions = [
   { name: 'Most Popular', href: '#', current: true },
@@ -11,8 +11,7 @@ const sortOptions = [
   { name: 'Price: High to Low', href: '#', current: false },
 ]
 </script>
-  
-  <style scoped>
+
+<style scoped>
 /* Add scoped styles as needed */
 </style>
-  

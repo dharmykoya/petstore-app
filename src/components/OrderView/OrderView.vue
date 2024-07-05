@@ -428,8 +428,8 @@
     </div>
   </div>
 </template>
-    
-  <script setup lang="ts">
+
+<script setup lang="ts">
 import { useFormatDate } from '../../composables/useFormatDate'
 import { useGetOrderStatus } from '../../composables/useGetOrderStatus'
 import DataTable from 'primevue/datatable'
@@ -492,4 +492,3 @@ const convertCurrency = (amount: number) => {
   background-color: white;
 }
 </style>
-    
