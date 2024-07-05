@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import MainLayout from './layouts/Mainlayout.vue'
 import HomePage from './pages/HomePage.vue'
 import OrderPage from './pages/OrderPage.vue'
+import { useAuthStore } from './store/auth'
 
 const routes = [
   {
@@ -18,6 +19,7 @@ const routes = [
   {
     path: '/orders',
     component: MainLayout,
+    meta: { requiresAuth: true },
     children: [
       {
         path: '',
@@ -31,6 +33,15 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+})
+
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  if (to.meta.requiresAuth && !authStore.isAuth) {
+    next({ name: 'Home' })
+  } else {
+    next()
+  }
 })
 
 export default router

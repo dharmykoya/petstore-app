@@ -17,8 +17,11 @@
             Log In
           </h2>
         </div>
-        <div v-if="errorMessage !== ''" class="text-red-500 text-center">
-          {{ errorMessage }}
+        <div
+          v-if="authError !== '' || errorMessage !== ''"
+          class="text-red-500 text-center bg-red-100 py-2 rounded-sm my-2"
+        >
+          {{ authError || errorMessage }}
         </div>
         <form class="space-y-6 mt-4" @submit.prevent="submitForm">
           <div>
@@ -115,6 +118,13 @@ const errorMessage = ref('')
 
 const emit = defineEmits(['openSignupModal', 'close', 'loginData'])
 
+defineProps({
+  authError: {
+    type: String,
+    required: true,
+  },
+})
+
 const toggleModals = () => {
   showSignupModal.value = true
   emit('openSignupModal', true)
@@ -137,7 +147,6 @@ const submitForm = () => {
     remember: remember.value,
   }
   emit('loginData', formData)
-  closeLogin()
 }
 </script>
 

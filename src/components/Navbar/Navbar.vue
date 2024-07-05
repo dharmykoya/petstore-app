@@ -36,7 +36,7 @@
           class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-center"
         >
           <div class="hidden sm:block sm:ml-6">
-            <div class="flex space-x-4">
+            <div class="flex space-x-4 items-center">
               <!-- Products Dropdown -->
               <Menu as="div" class="relative inline-block text-left">
                 <div>
@@ -87,20 +87,36 @@
               </Menu>
 
               <!-- Regular Navigation Links -->
-              <a
-                v-for="item in navigation"
-                :key="item.name"
-                :href="item.href"
-                :class="[
-                  item.current
-                    ? 'bg-gray-900 text-white'
-                    : 'text-white hover:bg-company-700',
-                  'rounded-md px-6 py-2 text-md cursor-pointer text-transform: uppercase',
-                ]"
-                :aria-current="item.current ? 'page' : undefined"
-              >
-                {{ item.name }}
-              </a>
+              <div v-for="item in navigation" :key="item.name">
+                <a
+                  :href="item.href"
+                  :class="[
+                    item.current
+                      ? 'bg-gray-900 text-white'
+                      : 'text-white hover:bg-company-700',
+                    'rounded-md px-6 py-2 text-md cursor-pointer text-transform: uppercase',
+                  ]"
+                  :aria-current="item.current ? 'page' : undefined"
+                >
+                  {{ item.name }}
+                </a>
+              </div>
+              <div v-if="isAuth">
+                <a
+                  v-for="item in authNavigation"
+                  :key="item.name"
+                  :href="item.href"
+                  :class="[
+                    item.current
+                      ? 'bg-gray-900 text-white'
+                      : 'text-white hover:bg-company-700',
+                    'rounded-md px-6 py-2 text-md cursor-pointer text-transform: uppercase',
+                  ]"
+                  :aria-current="item.current ? 'page' : undefined"
+                >
+                  {{ item.name }}
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -135,7 +151,7 @@
               LOGOUT
             </button>
             <!-- Profile dropdown -->
-            <div>
+            <div v-if="isAuth">
               <div
                 class="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-800 ml-2"
               >
@@ -248,15 +264,18 @@
   </Disclosure>
   <LoginModal
     v-if="showLoginModal"
-    @close="showLoginModal = false"
+    @close="handleLoginModalError"
     @openSignupModal="handleSignupModal"
     @loginData="handleLogin"
+    :authError="authError"
   />
   <SignupModal
     v-if="showSignupModal"
-    @close="showSignupModal = false"
+    @close="handleSignupModalError"
     @openLoginModal="handleLoginModal"
     @signupData="handleSignup"
+    :authError="authError"
+    :signupErrors="signupErrors"
   />
 </template>
 
@@ -292,6 +311,8 @@ interface ProductItem {
 const navigation: NavigationItem[] = [
   { name: 'Promotions', href: '#promotions', current: false },
   { name: 'Blog', href: '#blog', current: false },
+]
+const authNavigation: NavigationItem[] = [
   { name: 'Orders', href: '/orders', current: false },
 ]
 
@@ -305,6 +326,8 @@ const products: ProductItem[] = [
 const emit = defineEmits(['openLoginModal'])
 const showLoginModal = ref(false)
 const showSignupModal = ref(false)
+const authError = ref('')
+const signupErrors = ref({})
 
 const handleSignupModal = (value: boolean) => {
   showSignupModal.value = value
@@ -326,13 +349,13 @@ const handleLogin = async (formData: {
   try {
     const response = await axios.post(
       'https://pet-shop.buckhill.com.hr/api/v1/user/login',
-      formData,
+      formData
     )
-
     store.setToken(response.data.data.token)
   } catch (error: any) {
-    console.error('Login failed:', error.response?.data || error.message)
+    authError.value = 'Email/Password Incorrect'
   }
+  handleLoginModalError()
 }
 
 const handleSignup = async (formData: {
@@ -345,6 +368,7 @@ const handleSignup = async (formData: {
   confirmPassword: string
   isMarketing: boolean
 }) => {
+  signupErrors.value = {}
   try {
     const data = {
       first_name: formData.firstName,
@@ -359,13 +383,19 @@ const handleSignup = async (formData: {
 
     const response = await axios.post(
       'https://pet-shop.buckhill.com.hr/api/v1/user/create',
-      data,
+      data
     )
     store.setToken(response.data.data.token)
     store.setUser(response.data.data)
   } catch (error: any) {
-    console.error('Login failed:', error.response?.data || error.message)
+    if (error.response.status == 422) {
+      formatErrors(error.response?.data)
+      return
+    }
+    authError.value = 'Something went wrong, please contact admin'
   }
+
+  handleSignupModalError()
 }
 
 const handleLogout = () => {
@@ -373,6 +403,44 @@ const handleLogout = () => {
 }
 
 const isAuth = computed(() => store.isAuth)
+
+const handleLoginModalError = () => {
+  if (authError.value) {
+    showLoginModal.value = true
+    return
+  }
+  showLoginModal.value = false
+}
+
+const handleSignupModalError = () => {
+  if (authError.value) {
+    showSignupModal.value = true
+    return
+  }
+  signupErrors.value = {}
+  showSignupModal.value = false
+}
+
+interface ErrorObject {
+  errors: {
+    [key: string]: string[]
+  }
+}
+
+const formatErrors = (errorObj: ErrorObject): string => {
+  const formattedErrors: string[] = []
+  const formattedErrorsObj: { [key: string]: string } = {}
+
+  Object.keys(errorObj.errors).forEach((field) => {
+    errorObj.errors[field].forEach((error) => {
+      formattedErrors.push(`${field}: ${error}`)
+      formattedErrorsObj[field] = error
+    })
+  })
+  signupErrors.value = formattedErrorsObj
+
+  return formattedErrors.join('\n')
+}
 </script>
 
 <style scoped></style>
