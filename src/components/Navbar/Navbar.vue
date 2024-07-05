@@ -326,7 +326,7 @@ const handleLogin = async (formData: {
   try {
     const response = await axios.post(
       'https://pet-shop.buckhill.com.hr/api/v1/user/login',
-      formData
+      formData,
     )
 
     store.setToken(response.data.data.token)
@@ -359,7 +359,7 @@ const handleSignup = async (formData: {
 
     const response = await axios.post(
       'https://pet-shop.buckhill.com.hr/api/v1/user/create',
-      data
+      data,
     )
     store.setToken(response.data.data.token)
     store.setUser(response.data.data)
@@ -375,6 +375,4 @@ const handleLogout = () => {
 const isAuth = computed(() => store.isAuth)
 </script>
 
-
-<style scoped>
-</style>
+<style scoped></style>

@@ -32,8 +32,8 @@
     <button @click="generatePDF">Generate PDF from HTML</button>
   </div>
 </template>
-  
-  <script setup lang="ts">
+
+<script setup lang="ts">
 import { ref } from 'vue'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
@@ -65,8 +65,7 @@ const formattedDate = new Date().toLocaleDateString('en-US', {
   day: 'numeric',
 })
 </script>
-  
-  <style scoped>
+
+<style scoped>
 /* Add scoped styles as needed */
 </style>
-  

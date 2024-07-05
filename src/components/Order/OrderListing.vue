@@ -193,7 +193,6 @@
   />
 </template>
 
-
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import DataView from 'primevue/dataview'
@@ -386,4 +385,3 @@ const convertCurrency = (amount: number) => {
   overflow: hidden;
 }
 </style>
-    
