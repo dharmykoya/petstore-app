@@ -294,7 +294,7 @@ import { ShoppingCartIcon, ChevronDownIcon } from '@heroicons/vue/16/solid'
 import { Bars3Icon, XMarkIcon } from '@heroicons/vue/24/outline'
 import { ref, computed } from 'vue'
 import LoginModal from '../Login/Login.vue'
-import SignupModal from '../Signup/Signup.vue'
+import SignupModal from '../Register/Signup.vue'
 import { useAuthStore } from '../../store/auth'
 
 interface NavigationItem {
