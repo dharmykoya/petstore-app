@@ -140,7 +140,7 @@
                   </p>
                   <p class="text-sm text-gray-700 font-bold">
                     {{ selectedCurrency.symbol
-                    }}{{ convertCurrency(selectedOrder.amount.toFixed(2)) }}
+                    }}{{ convertCurrency(selectedOrder.amount) }}
                   </p>
                 </div>
               </div>
@@ -339,7 +339,7 @@
                 <strong class="font-bold text-gray-700"
                   >{{ selectedCurrency.symbol
                   }}{{
-                    convertCurrency(selectedOrder.amount.toFixed(2))
+                    convertCurrency(selectedOrder.amount)
                   }}</strong
                 >
               </p>
@@ -438,6 +438,8 @@ import printJS from 'print-js'
 import { useAuthStore } from '../../store/auth'
 import { useCurrency } from '../../composables/useCurrency'
 import { useOrderStore } from '../../store/order'
+import { OrderInterface } from '../../util/interfaces/OrderInterface'
+import { SelectOptionInterface } from '../../util/interfaces/SelectOptionInterface'
 
 const emit = defineEmits(['close'])
 const store = useAuthStore()
@@ -452,16 +454,10 @@ const { formatDate } = useFormatDate()
 const { getStatusIcon } = useGetOrderStatus()
 const { convertAmount } = useCurrency()
 
-const props = defineProps({
-  selectedOrder: {
-    type: Object,
-    required: true,
-  },
-  selectedCurrency: {
-    type: Object,
-    required: true,
-  },
-})
+const props = defineProps<{
+  selectedOrder: OrderInterface
+  selectedCurrency: SelectOptionInterface
+}>()
 
 const downloadOrder = async () => {
   try {

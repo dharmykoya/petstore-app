@@ -34,7 +34,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 

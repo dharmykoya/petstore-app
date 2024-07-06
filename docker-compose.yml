@@ -1,0 +1,10 @@
+version: '3'
+services:
+  vue-app:
+    build: .
+    ports:
+      - "9090:80"
+    environment:
+      - VUE_APP_API_URL=https://pet-shop.buckhill.com.hr/api/v1
+
+

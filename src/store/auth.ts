@@ -4,7 +4,7 @@ import { setCookie, getCookie, removeCookie } from '../util/cookie'
 import { UserService } from '../services/auth.service'
 
 // Define the user interface
-interface User {
+ interface User {
   uuid: string
   firstName: string
   lastName: string
@@ -18,7 +18,7 @@ interface User {
   createdAt: Date | null
 }
 
-interface LoginResponse {
+export interface LoginResponse {
   uuid: string
   first_name: string
   last_name: string
