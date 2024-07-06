@@ -332,7 +332,7 @@ const submitForm = () => {
 
   // Phone number format validation
   if (!validatePhoneNumber(phoneNumber.value)) {
-    errorMessage.value = 'Please, enter a valid phone number'
+    errorMessage.value = 'Please, enter a valid 10 digit phone number'
     return
   }
 

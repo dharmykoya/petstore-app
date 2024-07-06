@@ -332,6 +332,7 @@ const signupErrors = ref({})
 const handleSignupModal = (value: boolean) => {
   showSignupModal.value = value
   showLoginModal.value = false
+  authError.value = ''
 }
 
 const handleLoginModal = (value: boolean) => {

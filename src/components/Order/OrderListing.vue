@@ -186,7 +186,7 @@
     </DataView>
   </div>
   <order-view
-    v-if="showOrderViewModal"
+    v-if="showOrderViewModal && selectedOrder"
     @close="showOrderViewModal = false"
     :selectedOrder="selectedOrder"
     :selectedCurrency="selectedCurrency"
@@ -201,7 +201,8 @@ import {
   OrderInterface,
   OrderStatusInterface,
 } from '../../util/interfaces/OrderInterface'
-import { ChevronDownIcon, ShoppingBagIcon } from '@heroicons/vue/16/solid'
+import { SelectOptionInterface } from '../../util/interfaces/SelectOptionInterface'
+import { ShoppingBagIcon } from '@heroicons/vue/16/solid'
 import {
   ArrowLongDownIcon,
   ArrowLongUpIcon,
@@ -211,7 +212,6 @@ import {
 } from '@heroicons/vue/24/outline'
 import { objectToQueryString } from '../../util/helper'
 import OrderView from '../OrderView/OrderView.vue'
-import printJS from 'print-js'
 import { useOrderStore } from '../../store/order'
 import { useCurrency } from '../../composables/useCurrency'
 import { useFormatDate } from '../../composables/useFormatDate'
@@ -235,13 +235,9 @@ const sortItems = ref([
 
 const { formatDate } = useFormatDate()
 const { convertAmount } = useCurrency()
-interface SelectOption {
-  code: string
-  name: string
-  symbol: string
-}
-const selectedSort = ref<SelectOption | null>(null)
-const selectedCurrency = ref<SelectOption | null>({
+
+const selectedSort = ref<SelectOptionInterface | null>(null)
+const selectedCurrency = ref<SelectOptionInterface>({
   name: 'CNY',
   code: 'CNY',
   symbol: 'CNY',

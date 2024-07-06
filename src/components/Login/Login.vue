@@ -108,7 +108,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useAuthStore } from '../../store/auth'
 
 const showSignupModal = ref(false)
 const email = ref('')
